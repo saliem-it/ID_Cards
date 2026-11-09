@@ -1,0 +1,1197 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منشئ بطاقات البطولات الاحترافي الشامل</title>
+    <!-- Bootstrap 5 RTL المحلي -->
+    <link rel="stylesheet" href="Assets/bootstrap-5.3.8-dist/css/bootstrap.rtl.min.css">
+    <!-- Font Awesome المحلي -->
+    <link rel="stylesheet" href="Assets/fontawesome/css/all.min.css">
+    <!-- ملف التنسيقات الخارجي المنفصل -->
+    <link rel="stylesheet" href="Assets/css/style_v2.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* التنسيق الإضافي الخاص بمسافة الاسم العلوية المربوطة بالمتغير */
+        .participant-name-container {
+            margin-top: var(--name-margin-top, 2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="workspace-container">
+
+        <!-- لوحة التحكم الجانبية -->
+        <div class="control-sidebar p-3">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold m-0 text-success" style="font-size: 13px;"><i class="fa-solid fa-id-card-clip me-1"></i> منشئ البطاقات الاحترافي</h6>
+                <a href="help.html" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill py-0 px-2" style="font-size: 11px;">
+                    <i class="fa-solid fa-circle-question me-1"></i> المساعدة
+                </a>
+            </div>
+
+            <!-- رفع ملف الإكسل -->
+            <div class="mb-3">
+                <label class="drop-zone border-2 border-dashed rounded-3 p-2 text-center d-block bg-light" id="dropZone" for="excelFileInput" style="cursor: pointer;">
+                    <i class="fa-solid fa-file-excel text-success fa-lg me-1"></i>
+                    <span class="fw-bold small" id="dropZoneText" style="font-size: 11px;">اختر ملف الإكسل أو اسحبه هنا</span>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="handleExcelUpload(event)">
+                </label>
+            </div>
+
+            <!-- الأكورديون للإعدادات والتخصيص -->
+            <div class="accordion mb-3" id="settingsAccordion" style="font-size: 12px;">
+
+                <!-- 1. النصوص والتواريخ والقالب -->
+                <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button fw-bold py-2 px-3 bg-light text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#c1" style="font-size: 12px;">
+                            <i class="fa-solid fa-pen-to-square me-2 text-primary"></i> 1. النصوص والتواريخ والقالب
+                        </button>
+                    </h2>
+                    <div id="c1" class="accordion-collapse collapse show" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body p-2 bg-white">
+                            <div class="mb-2">
+                                <label class="form-label fw-semibold m-0">اسم البطولة:</label>
+                                <input type="text" id="tournamentNameInput" class="form-control form-control-sm" value="بطولة سليم الدولية للبرمجة" oninput="renderBadges()">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label fw-semibold m-0">تذييل البطاقة (Footer):</label>
+                                <input type="text" id="footerTextInput" class="form-control form-control-sm" value="اللجنة المنظمة للبطولة | MOSY ICT" oninput="renderBadges()">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label fw-semibold m-0 text-primary">نمط القالب:</label>
+                                <select id="layoutPresetSelect" class="form-select form-select-sm fw-bold border-primary" onchange="renderBadges()">
+                                    <option value="layout-default" selected>1. القياسي العمودي</option>
+                                    <option value="layout-horizontal">2. العريض الأفقي</option>
+                                    <option value="layout-top-photo">3. المدمج (صورة كبرى)</option>
+                                    <option value="layout-tech-qr">4. التقني (QR بارز)</option>
+                                    <option value="layout-athletic">5. الرياضي</option>
+                                </select>
+                            </div>
+                            <div class="row g-1">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold m-0">بداية:</label>
+                                    <input type="date" id="startDateInput" class="form-control form-control-sm" value="2026-10-16" onchange="renderBadges()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold m-0">نهاية:</label>
+                                    <input type="date" id="endDateInput" class="form-control form-control-sm" value="2026-10-23" onchange="renderBadges()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. الألوان وتدرجات الرأس والتأثيرات -->
+                <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold py-2 px-3 bg-light text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#cColors" style="font-size: 12px;">
+                            <i class="fa-solid fa-palette me-2 text-warning"></i> 2. الألوان وتدرجات الرأس والتأثيرات
+                        </button>
+                    </h2>
+                    <div id="cColors" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body p-2 bg-white">
+                            <div class="row g-1 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label m-0" style="font-size:10px;">اللون الأول للرأس:</label>
+                                    <input type="color" id="primaryColorInput" class="form-control form-control-color w-100" value="#059669" onchange="applyCustomizations()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label m-0" style="font-size:10px;">اللون الثاني للتدرج:</label>
+                                    <input type="color" id="gradientColor2Input" class="form-control form-control-color w-100" value="#025a3e" onchange="applyCustomizations()">
+                                </div>
+                            </div>
+
+                            <div class="row g-1 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label m-0" style="font-size:10px;">اللون الثانوي:</label>
+                                    <input type="color" id="secondaryColorInput" class="form-control form-control-color w-100" value="#fbbf24" onchange="applyCustomizations()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label m-0" style="font-size:10px;">لون الصفة:</label>
+                                    <input type="color" id="accentColorInput" class="form-control form-control-color w-100" value="#dc2626" onchange="applyCustomizations()">
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label m-0 fw-bold text-secondary" style="font-size:10px;">لون رمز الاستجابة السريعة (QR Color):</label>
+                                <input type="color" id="qrColorInput" class="form-control form-control-color w-100" value="#334155" onchange="applyCustomizations()">
+                            </div>
+
+                            <div class="mb-2 p-1 bg-light rounded border">
+                                <div class="fw-bold text-dark mb-1" style="font-size: 10px;">اتجاه وتصميم التدرج:</div>
+                                <select id="headerGradientStyle" class="form-select form-select-sm" onchange="applyCustomizations()" style="font-size: 11px;">
+                                    <option value="diagonal" selected>مائل احترافي (Diagonal 135°)</option>
+                                    <option value="vertical">عمودي متدرج (Vertical)</option>
+                                    <option value="horizontal">أفقي متدرج (Horizontal)</option>
+                                    <option value="solid">لون صلْب نقي (Solid)</option>
+                                </select>
+                            </div>
+
+                            <div class="row g-1 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label m-0" style="font-size:10px;">خلفية البطاقة:</label>
+                                    <input type="color" id="cardBgColorInput" class="form-control form-control-color w-100" value="#ffffff" onchange="applyCustomizations()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label m-0" style="font-size:10px;">حدود البطاقة:</label>
+                                    <input type="color" id="cardBorderColorInput" class="form-control form-control-color w-100" value="#cbd5e1" onchange="applyCustomizations()">
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label m-0" style="font-size:10px;">تأثير ظل البطاقة:</label>
+                                <select id="cardShadowStyle" class="form-select form-select-sm" onchange="applyCustomizations()" style="font-size: 11px;">
+                                    <option value="0 12px 28px rgba(0, 0, 0, 0.08)" selected>ظل قياسي ناعم</option>
+                                    <option value="0 20px 40px rgba(5, 150, 105, 0.18)">ظل أخضر متوهج فاخر</option>
+                                    <option value="0 4px 12px rgba(0, 0, 0, 0.05)">ظل خفيف وبسيط</option>
+                                    <option value="none">بدون ظل (Flat)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label m-0" style="font-size:10px;">استدارة حواف البطاقة: <span id="radiusVal">18</span>px</label>
+                                <input type="range" id="cardRadiusInput" class="form-range" min="0" max="30" value="18" oninput="applyCustomizations()">
+                            </div>
+
+                            <!-- خيار التحكم بمسافة الاسم عن أعلى البطاقة -->
+                            <div class="mb-2">
+                                <label class="form-label m-0 text-success fw-bold" style="font-size:10px;">بعد الاسم عن أعلى البطاقة: <span id="nameSpacingVal">2</span>px</label>
+                                <input type="range" id="nameSpacingInput" class="form-range" min="0" max="40" value="2" oninput="applyCustomizations()">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label m-0">نوع الخط:</label>
+                                <select id="fontSelect" class="form-select form-select-sm" onchange="applyCustomizations()">
+                                    <option value="'Cairo', sans-serif">Cairo</option>
+                                    <option value="'Tajawal', sans-serif">Tajawal</option>
+                                    <option value="'Almarai', sans-serif">Almarai</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label m-0">شعار البطولة (Logo):</label>
+                                <input type="file" id="logoInput" accept="image/*" class="form-control form-control-sm" onchange="handleLogoUpload(event)">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label m-0">حجم اللوغو: <span id="logoSizeVal">40</span>px</label>
+                                <input type="range" id="logoSizeInput" class="form-range" min="20" max="90" value="40" oninput="applyCustomizations()">
+                            </div>
+                            <div>
+                                <label class="form-label m-0">مقياس الطباعة: <span id="printScaleVal">100</span>%</label>
+                                <input type="range" id="printScaleInput" class="form-range" min="60" max="130" value="100" oninput="applyCustomizations()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. المقاسات -->
+                <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold py-2 px-3 bg-light text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#c2" style="font-size: 12px;">
+                            <i class="fa-solid fa-ruler-combined me-2 text-danger"></i> 3. مقاسات البطاقة والورق
+                        </button>
+                    </h2>
+                    <div id="c2" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body p-2 bg-white">
+                            <div class="mb-2">
+                                <label class="form-label fw-semibold m-0">حجم البطاقة:</label>
+                                <select id="badgeSizeSelect" class="form-select form-select-sm" onchange="updateBadgeSize()">
+                                    <option value="A7" selected>A7 (74x105 مم)</option>
+                                    <option value="CR80">CR80 (بطاقة ائتمان)</option>
+                                    <option value="JUMBO">Jumbo</option>
+                                    <option value="XL">XL</option>
+                                    <option value="CUSTOM">مخصص</option>
+                                </select>
+                            </div>
+                            <div class="row g-1 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold m-0">العرض (مم):</label>
+                                    <input type="number" id="customWidthInput" class="form-control form-control-sm" value="74" step="0.1" onchange="applyCustomSize()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-semibold m-0">الارتفاع (مم):</label>
+                                    <input type="number" id="customHeightInput" class="form-control form-control-sm" value="105" step="0.1" onchange="applyCustomSize()">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label fw-semibold m-0">ورق الطابعة:</label>
+                                <select id="printerPaperSelect" class="form-select form-select-sm" onchange="updatePrinterPaper()">
+                                    <option value="EXACT" selected>مطابق للبطاقة تماماً</option>
+                                    <option value="A4_PORTRAIT">ورق A4 عمودي</option>
+                                    <option value="A5_PORTRAIT">ورق A5 عمودي</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. الحقول المخصصة وعناصر الإظهار -->
+                <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold py-2 px-3 bg-light text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#c3" style="font-size: 12px;">
+                            <i class="fa-solid fa-eye me-2 text-success"></i> 4. الحقول المخصصة والتبديلات
+                        </button>
+                    </h2>
+                    <div id="c3" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body p-2 bg-white">
+                            <div class="mb-2 p-1 bg-light rounded border">
+                                <div class="fw-bold text-primary mb-1" style="font-size: 11px;">الحقول الرياضية الأربعة:</div>
+                                <input type="text" id="customFieldName1Input" class="form-control form-control-sm mb-1" value="الوزن / الفئة" oninput="updateCustomFilterLabels(); renderBadges();" placeholder="حقل 1">
+                                <input type="text" id="customFieldName2Input" class="form-control form-control-sm mb-1" value="النادي / الفريق" oninput="updateCustomFilterLabels(); renderBadges();" placeholder="حقل 2">
+                                <input type="text" id="customFieldName3Input" class="form-control form-control-sm mb-1" value="مركز اللعب" oninput="updateCustomFilterLabels(); renderBadges();" placeholder="حقل 3">
+                                <input type="text" id="customFieldName4Input" class="form-control form-control-sm" value="رقم القميص" oninput="updateCustomFilterLabels(); renderBadges();" placeholder="حقل 4">
+                            </div>
+                            <div class="row g-1" style="font-size: 11px;">
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showLogoToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showLogoToggle">الشعار</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showTitleToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showTitleToggle">العنوان</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showDatesToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showDatesToggle">التواريخ</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showRoleToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showRoleToggle">الصفة</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showEnNameToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showEnNameToggle">الاسم بالإنكليزي</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showSerialToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showSerialToggle">الرقم التسلسلي</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showDobToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showDobToggle">تاريخ الولادة</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showAgeToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showAgeToggle">العمر التلقائي</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showCustomField1Toggle" checked onchange="renderBadges()"><label class="form-check-label text-primary" for="showCustomField1Toggle">حقل مخصص 1</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showCustomField2Toggle" checked onchange="renderBadges()"><label class="form-check-label text-primary" for="showCustomField2Toggle">حقل مخصص 2</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showCustomField3Toggle" checked onchange="renderBadges()"><label class="form-check-label text-primary" for="showCustomField3Toggle">حقل مخصص 3</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showCustomField4Toggle" checked onchange="renderBadges()"><label class="form-check-label text-primary" for="showCustomField4Toggle">حقل مخصص 4</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showCountryToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showCountryToggle">الدولة</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showPhotoToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showPhotoToggle">الصورة</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showQRToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showQRToggle">رمز QR</label></div></div>
+                                <div class="col-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="showFooterToggle" checked onchange="renderBadges()"><label class="form-check-label" for="showFooterToggle">التذييل</label></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. تبويب الفلترة والبحث المتقدم مع خيارات الحقول المخصصة -->
+                <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold py-2 px-3 bg-light text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#cFilters" style="font-size: 12px;">
+                            <i class="fa-solid fa-filter me-2 text-info"></i> 5. الفلترة والبحث المتقدم
+                        </button>
+                    </h2>
+                    <div id="cFilters" class="accordion-collapse collapse" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body p-2 bg-white">
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0" style="font-size: 11px;">الصفة العامة للدفعة:</label>
+                                <select id="roleSelect" class="form-select form-select-sm" onchange="updateRoles()">
+                                    <option value="لاعب / PLAYER">لاعب / PLAYER</option>
+                                    <option value="إداري / OFFICIAL">إداري / OFFICIAL</option>
+                                    <option value="حكم / REFEREE">حكم / REFEREE</option>
+                                    <option value="اللجنة المنظمة / ORGANIZER">اللجنة المنظمة</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0" style="font-size: 11px;">فلتر حسب الدولة:</label>
+                                <select id="countryFilterSelect" class="form-select form-select-sm" onchange="renderBadges()">
+                                    <option value="all">جميع الدول</option>
+                                </select>
+                            </div>
+
+                            <!-- فلترة الحقول المخصصة الأربعة -->
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0 text-primary" style="font-size: 11px;" id="lblFilterC1">فلتر حسب الوزن / الفئة:</label>
+                                <select id="customFilter1Select" class="form-select form-select-sm" onchange="renderBadges()">
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0 text-success" style="font-size: 11px;" id="lblFilterC2">فلتر حسب النادي / الفريق:</label>
+                                <select id="customFilter2Select" class="form-select form-select-sm" onchange="renderBadges()">
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0 text-danger" style="font-size: 11px;" id="lblFilterC3">فلتر حسب مركز اللعب:</label>
+                                <select id="customFilter3Select" class="form-select form-select-sm" onchange="renderBadges()">
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0 text-dark" style="font-size: 11px;" id="lblFilterC4">فلتر حسب رقم القميص:</label>
+                                <select id="customFilter4Select" class="form-select form-select-sm" onchange="renderBadges()">
+                                    <option value="all">الكل</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label fw-bold m-0" style="font-size: 11px;">ترتيب وفرز المشاركين:</label>
+                                <select id="sortOrderSelect" class="form-select form-select-sm" onchange="renderBadges()">
+                                    <option value="default">الافتراضي (حسب الملف)</option>
+                                    <option value="name_asc">الاسم (تصاعدي أ-ي)</option>
+                                    <option value="name_desc">الاسم (تنازلي ي-أ)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label fw-bold m-0" style="font-size: 11px;">بحث سريع:</label>
+                                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="ابحث بالاسم أو الرقم..." oninput="renderBadges()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- أزرار حفظ/رفع القوالب JSON -->
+            <div class="d-flex gap-1 mb-3">
+                <button class="btn btn-outline-primary btn-sm w-50 rounded-pill" style="font-size: 11px;" onclick="exportPresetFile()"><i class="fa-solid fa-file-arrow-down me-1"></i> حفظ JSON</button>
+                <label class="btn btn-outline-success btn-sm w-50 m-0 rounded-pill text-center" style="font-size: 11px; cursor: pointer;">
+                    <i class="fa-solid fa-file-arrow-up me-1"></i> رفع JSON <input type="file" accept=".json" class="d-none" onchange="importPresetFile(event)">
+                </label>
+            </div>
+
+        </div>
+
+        <!-- منطقة المعاينة الواسعة -->
+        <div class="preview-pane">
+            <div class="bg-white p-3 rounded-4 shadow-sm mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="toggleSelectAll(true)">تحديد الكل</button>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="toggleSelectAll(false)">إلغاء التحديد</button>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2" id="selectedCount">0 بطاقات</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button id="exportImgBtn" class="btn btn-info btn-sm px-3 fw-bold text-white rounded-pill shadow-sm" disabled onclick="openExportModal()">
+                        <i class="fa-solid fa-images me-1"></i> معرض الصور
+                    </button>
+                    <button id="printBtn" class="btn btn-success btn-sm px-4 fw-bold rounded-pill shadow-sm" disabled onclick="window.print()">
+                        <i class="fa-solid fa-print me-1"></i> طباعة البطاقات
+                    </button>
+                    <button id="clearBtn" class="btn btn-outline-danger btn-sm px-3 rounded-pill" disabled onclick="clearBadges()">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- حاوية البطاقات المعروضة -->
+            <div id="badgesContainer" class="badges-wrapper"></div>
+        </div>
+
+    </div>
+
+    <!-- Modal المعاينة المكبرة -->
+    <div class="modal fade no-print" id="zoomModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-success text-white py-2">
+                    <h6 class="modal-title fw-bold"><i class="fa-solid fa-magnifying-glass-plus me-1"></i> معاينة البطاقة بحجم مكبر</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center align-items-center bg-light p-4" id="zoomModalBody"></div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة معرض الصور والتصدير الفردي -->
+    <div class="modal fade no-print" id="exportGalleryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-info text-white py-2">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-images me-2"></i>معرض صور البطاقات الجاهزة للتنزيل الفردي</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light p-4">
+                    <div id="exportGalleryLoading" class="text-center py-5">
+                        <div class="spinner-border text-info mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <h6 class="fw-bold">جاري معالجة وتحويل البطاقات وصور المشاركين... <span id="galleryProgressTxt">0%</span></h6>
+                    </div>
+                    <div id="exportGalleryGrid" class="row g-3"></div>
+                </div>
+                <div class="modal-footer py-2 d-flex justify-content-between">
+                    <span class="small text-muted fw-bold">اضغط على زر "تحميل الصورة" أسفل أي بطاقة لحفظها بشكل منفصل.</span>
+                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle المحلي -->
+    <script src="Assets/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+    <!-- المكتبات المحلية (SheetJS, QR Code, html2canvas) -->
+    <script src="Assets/js/xlsx.full.min.js"></script>
+    <script src="Assets/js/qr-code-styling.js"></script>
+    <script src="Assets/js/html2canvas.min.js"></script>
+
+    <script>
+        const defaultLogoSVG = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20width%3D%22100%22%20height%3D%22100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2248%22%20fill%3D%22%23059669%22%2F%3E%3Cpath%20d%3D%22M50%2015%20L80%2035%20L80%2065%20L50%2085%20L20%2065%20L20%2035%20Z%22%20fill%3D%22none%22%20stroke%3D%22%23fbbf24%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M35%2050%20L45%2060%20L65%2040%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E';
+
+        let uploadedLogoBase64 = '';
+        let participantsData = [];
+        let printSelection = [];
+
+        const badgeDimensions = {
+            'CR80': { width: 85.6, height: 54 },
+            'A7': { width: 74, height: 105 },
+            'JUMBO': { width: 85.6, height: 125 },
+            'XL': { width: 100, height: 140 }
+        };
+
+        const printerPaperPresets = {
+            'EXACT': null,
+            'A4_PORTRAIT': { width: 210, height: 297 },
+            'A5_PORTRAIT': { width: 148, height: 210 }
+        };
+
+        const countryFlags = {
+            'سوريا': 'sy', 'syria': 'sy', 'مصر': 'eg', 'egypt': 'eg',
+            'الأردن': 'jo', 'jordan': 'jo', 'لبنان': 'lb', 'lebanon': 'lb',
+            'العراق': 'iq', 'iraq': 'iraq', 'السعودية': 'sa', 'saudi arabia': 'sa',
+            'الإمارات': 'ae', 'uae': 'uae', 'قطر': 'qa', 'qatar': 'qatar',
+            'تونس': 'tn', 'tunisia': 'tn', 'الجزائر': 'dz', 'algeria': 'dz',
+            'المغرب': 'ma', 'morocco': 'ma', 'الكويت': 'kw', 'kuwait': 'kw',
+            'البحرين': 'bh', 'bahrain': 'bahrain', 'عمان': 'om', 'oman': 'oman',
+            'فلسطين': 'ps', 'palestine': 'ps', 'تركيا': 'tr', 'turkey': 'tr'
+        };
+
+        function formatExcelDate(serial) {
+            if (!serial) return '----/--/--';
+            if (typeof serial === 'string' && serial.includes('/')) return serial;
+            if (typeof serial === 'string' && serial.includes('-')) return serial.replace(/-/g, '/');
+            const num = parseFloat(serial);
+            if (isNaN(num) || num < 1000) return serial;
+            const utc_days = Math.floor(num - 25569);
+            const utc_value = utc_days * 86400;
+            const date_info = new Date(utc_value * 1000);
+            return `${date_info.getFullYear()}/${String(date_info.getMonth() + 1).padStart(2, '0')}/${String(date_info.getDate()).padStart(2, '0')}`;
+        }
+
+        function calculateAge(dobStr) {
+            if (!dobStr || dobStr === '----/--/--') return '';
+            const parts = dobStr.split('/');
+            if (parts.length === 3) {
+                const birthYear = parseInt(parts[0]);
+                const birthMonth = parseInt(parts[1]) - 1;
+                const birthDay = parseInt(parts[2]);
+                if (isNaN(birthYear)) return '';
+                const today = new Date();
+                let age = today.getFullYear() - birthYear;
+                const m = today.getMonth() - birthMonth;
+                if (m < 0 || (m === 0 && today.getDate() < birthDay)) age--;
+                return age >= 0 ? `(${age} سنة)` : '';
+            }
+            return '';
+        }
+
+        function convertImgToBase64(url) {
+            return new Promise((resolve) => {
+                if (!url || url.startsWith('data:')) {
+                    resolve(url);
+                    return;
+                }
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = function () {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        resolve(url);
+                    }
+                };
+                img.onerror = () => resolve(url);
+                img.src = url;
+            });
+        }
+
+        function updateBadgeSize() {
+            const sizeKey = document.getElementById('badgeSizeSelect').value;
+            if (sizeKey !== 'CUSTOM' && badgeDimensions[sizeKey]) {
+                const dim = badgeDimensions[sizeKey];
+                document.getElementById('customWidthInput').value = dim.width;
+                document.getElementById('customHeightInput').value = dim.height;
+                applyBadgeDimensions(dim.width, dim.height);
+            }
+        }
+
+        function applyCustomSize() {
+            document.getElementById('badgeSizeSelect').value = 'CUSTOM';
+            const w = parseFloat(document.getElementById('customWidthInput').value) || 74;
+            const h = parseFloat(document.getElementById('customHeightInput').value) || 105;
+            applyBadgeDimensions(w, h);
+        }
+
+        function applyBadgeDimensions(widthMm, heightMm) {
+            const root = document.documentElement;
+            root.style.setProperty('--badge-width', `${widthMm}mm`);
+            root.style.setProperty('--badge-height', `${heightMm}mm`);
+            updatePrinterPaper();
+        }
+
+        function updatePrinterPaper() {
+            const paperChoice = document.getElementById('printerPaperSelect').value;
+            const root = document.documentElement;
+
+            if (paperChoice === 'EXACT' || !printerPaperPresets[paperChoice]) {
+                const currentW = parseFloat(document.getElementById('customWidthInput').value) || 74;
+                const currentH = parseFloat(document.getElementById('customHeightInput').value) || 105;
+                root.style.setProperty('--page-width', `${currentW}mm`);
+                root.style.setProperty('--page-height', `${currentH}mm`);
+            } else {
+                const pDim = printerPaperPresets[paperChoice];
+                root.style.setProperty('--page-width', `${pDim.width}mm`);
+                root.style.setProperty('--page-height', `${pDim.height}mm`);
+            }
+
+            if (participantsData.length > 0) renderBadges();
+        }
+
+        function applyCustomizations() {
+            const primary = document.getElementById('primaryColorInput').value;
+            const gradientColor2 = document.getElementById('gradientColor2Input').value;
+            const secondary = document.getElementById('secondaryColorInput').value;
+            const accent = document.getElementById('accentColorInput').value;
+            const cardBg = document.getElementById('cardBgColorInput').value;
+            const cardBorder = document.getElementById('cardBorderColorInput').value;
+            const shadowStyle = document.getElementById('cardShadowStyle').value;
+            const radius = document.getElementById('cardRadiusInput').value + 'px';
+            document.getElementById('radiusVal').innerText = document.getElementById('cardRadiusInput').value;
+
+            // مسافة الاسم عن أعلى البطاقة
+            const nameSpacing = document.getElementById('nameSpacingInput').value + 'px';
+            document.getElementById('nameSpacingVal').innerText = document.getElementById('nameSpacingInput').value;
+
+            const gradientStyle = document.getElementById('headerGradientStyle').value;
+            let headerBgVal = `linear-gradient(135deg, ${primary}, ${gradientColor2})`;
+            if (gradientStyle === 'vertical') {
+                headerBgVal = `linear-gradient(to bottom, ${primary}, ${gradientColor2})`;
+            } else if (gradientStyle === 'horizontal') {
+                headerBgVal = `linear-gradient(to right, ${primary}, ${gradientColor2})`;
+            } else if (gradientStyle === 'solid') {
+                headerBgVal = primary;
+            }
+
+            const font = document.getElementById('fontSelect').value;
+            const printScale = document.getElementById('printScaleInput').value;
+            document.getElementById('printScaleVal').innerText = printScale;
+
+            const logoSize = document.getElementById('logoSizeInput').value + 'px';
+            document.getElementById('logoSizeVal').innerText = document.getElementById('logoSizeInput').value;
+
+            const root = document.documentElement;
+            root.style.setProperty('--logo-size', logoSize);
+            root.style.setProperty('--primary-color', primary);
+            root.style.setProperty('--gradient-color-2', gradientColor2);
+            root.style.setProperty('--secondary-color', secondary);
+            root.style.setProperty('--accent-color', accent);
+            root.style.setProperty('--card-bg-color', cardBg);
+            root.style.setProperty('--card-border-color', cardBorder);
+            root.style.setProperty('--card-shadow', shadowStyle);
+            root.style.setProperty('--card-border-radius', radius);
+            root.style.setProperty('--header-bg-gradient', headerBgVal);
+            root.style.setProperty('--badge-font', font);
+            root.style.setProperty('--print-scale', printScale / 100);
+            root.style.setProperty('--name-margin-top', nameSpacing);
+
+            if (participantsData.length > 0) renderBadges();
+        }
+
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    convertImgToBase64(event.target.result).then(base64 => {
+                        uploadedLogoBase64 = base64;
+                        if (participantsData.length > 0) renderBadges();
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleParticipantPhoto(event, index) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    convertImgToBase64(e.target.result).then(base64 => {
+                        participantsData[index].photoUrl = base64;
+                        renderBadges();
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateCustomFilterLabels() {
+            const c1Name = document.getElementById('customFieldName1Input').value || 'حقل مخصص 1';
+            const c2Name = document.getElementById('customFieldName2Input').value || 'حقل مخصص 2';
+            const c3Name = document.getElementById('customFieldName3Input').value || 'حقل مخصص 3';
+            const c4Name = document.getElementById('customFieldName4Input').value || 'حقل مخصص 4';
+
+            document.getElementById('lblFilterC1').innerText = `فلتر حسب ${c1Name}:`;
+            document.getElementById('lblFilterC2').innerText = `فلتر حسب ${c2Name}:`;
+            document.getElementById('lblFilterC3').innerText = `فلتر حسب ${c3Name}:`;
+            document.getElementById('lblFilterC4').innerText = `فلتر حسب ${c4Name}:`;
+
+            if (participantsData.length > 0) {
+                updateCustomFilterOptions();
+            }
+        }
+
+        function updateCustomFilterOptions() {
+            const cName1 = document.getElementById('customFieldName1Input').value;
+            const cName2 = document.getElementById('customFieldName2Input').value;
+            const cName3 = document.getElementById('customFieldName3Input').value;
+            const cName4 = document.getElementById('customFieldName4Input').value;
+
+            const vals1 = new Set();
+            const vals2 = new Set();
+            const vals3 = new Set();
+            const vals4 = new Set();
+
+            participantsData.forEach(p => {
+                const v1 = getExcelFieldValue(p, cName1);
+                const v2 = getExcelFieldValue(p, cName2);
+                const v3 = getExcelFieldValue(p, cName3);
+                const v4 = getExcelFieldValue(p, cName4);
+                if (v1) vals1.add(String(v1).trim());
+                if (v2) vals2.add(String(v2).trim());
+                if (v3) vals3.add(String(v3).trim());
+                if (v4) vals4.add(String(v4).trim());
+            });
+
+            populateSelect('customFilter1Select', vals1);
+            populateSelect('customFilter2Select', vals2);
+            populateSelect('customFilter3Select', vals3);
+            populateSelect('customFilter4Select', vals4);
+        }
+
+        function populateSelect(elementId, valuesSet) {
+            const selectEl = document.getElementById(elementId);
+            const currentVal = selectEl.value;
+            selectEl.innerHTML = `<option value="all">الكل</option>`;
+            valuesSet.forEach(val => {
+                selectEl.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+            if ([...valuesSet].includes(currentVal)) {
+                selectEl.value = currentVal;
+            }
+        }
+
+        function getCurrentConfigObject() {
+            return {
+                badgeSizeKey: document.getElementById('badgeSizeSelect').value,
+                layoutPreset: document.getElementById('layoutPresetSelect').value,
+                customWidth: document.getElementById('customWidthInput').value,
+                customHeight: document.getElementById('customHeightInput').value,
+                printerPaper: document.getElementById('printerPaperSelect').value,
+                primary: document.getElementById('primaryColorInput').value,
+                gradientColor2: document.getElementById('gradientColor2Input').value,
+                secondary: document.getElementById('secondaryColorInput').value,
+                accent: document.getElementById('accentColorInput').value,
+                qrColor: document.getElementById('qrColorInput').value,
+                cardBgColor: document.getElementById('cardBgColorInput').value,
+                cardBorderColor: document.getElementById('cardBorderColorInput').value,
+                cardShadowStyle: document.getElementById('cardShadowStyle').value,
+                cardRadius: document.getElementById('cardRadiusInput').value,
+                nameSpacing: document.getElementById('nameSpacingInput').value,
+                headerGradientStyle: document.getElementById('headerGradientStyle').value,
+                font: document.getElementById('fontSelect').value,
+                printScale: document.getElementById('printScaleInput').value,
+                tournamentName: document.getElementById('tournamentNameInput').value,
+                footerText: document.getElementById('footerTextInput').value,
+                customFieldName1: document.getElementById('customFieldName1Input').value,
+                customFieldName2: document.getElementById('customFieldName2Input').value,
+                customFieldName3: document.getElementById('customFieldName3Input').value,
+                customFieldName4: document.getElementById('customFieldName4Input').value,
+                logo: uploadedLogoBase64,
+                showLogo: document.getElementById('showLogoToggle').checked,
+                showTitle: document.getElementById('showTitleToggle').checked,
+                showDates: document.getElementById('showDatesToggle').checked,
+                showRole: document.getElementById('showRoleToggle').checked,
+                showEnName: document.getElementById('showEnNameToggle').checked,
+                showSerial: document.getElementById('showSerialToggle').checked,
+                showDob: document.getElementById('showDobToggle').checked,
+                showAge: document.getElementById('showAgeToggle').checked,
+                showCustomField1: document.getElementById('showCustomField1Toggle').checked,
+                showCustomField2: document.getElementById('showCustomField2Toggle').checked,
+                showCustomField3: document.getElementById('showCustomField3Toggle').checked,
+                showCustomField4: document.getElementById('showCustomField4Toggle').checked,
+                showCountry: document.getElementById('showCountryToggle').checked,
+                showPhoto: document.getElementById('showPhotoToggle').checked,
+                showQR: document.getElementById('showQRToggle').checked,
+                showFooter: document.getElementById('showFooterToggle').checked
+            };
+        }
+
+        function applyConfigObject(config) {
+            if (!config) return;
+            if (config.badgeSizeKey) document.getElementById('badgeSizeSelect').value = config.badgeSizeKey;
+            if (config.layoutPreset) document.getElementById('layoutPresetSelect').value = config.layoutPreset;
+            if (config.customWidth) document.getElementById('customWidthInput').value = config.customWidth;
+            if (config.customHeight) document.getElementById('customHeightInput').value = config.customHeight;
+            if (config.printerPaper) document.getElementById('printerPaperSelect').value = config.printerPaper;
+
+            applyCustomSize();
+            updatePrinterPaper();
+
+            if (config.primary) document.getElementById('primaryColorInput').value = config.primary;
+            if (config.gradientColor2) document.getElementById('gradientColor2Input').value = config.gradientColor2;
+            if (config.secondary) document.getElementById('secondaryColorInput').value = config.secondary;
+            if (config.accent) document.getElementById('accentColorInput').value = config.accent;
+            if (config.qrColor) document.getElementById('qrColorInput').value = config.qrColor;
+            if (config.cardBgColor) document.getElementById('cardBgColorInput').value = config.cardBgColor;
+            if (config.cardBorderColor) document.getElementById('cardBorderColorInput').value = config.cardBorderColor;
+            if (config.cardShadowStyle) document.getElementById('cardShadowStyle').value = config.cardShadowStyle;
+            if (config.cardRadius) document.getElementById('cardRadiusInput').value = config.cardRadius;
+            if (config.nameSpacing) document.getElementById('nameSpacingInput').value = config.nameSpacing;
+            if (config.headerGradientStyle) document.getElementById('headerGradientStyle').value = config.headerGradientStyle;
+
+            if (config.font) document.getElementById('fontSelect').value = config.font;
+            if (config.printScale) document.getElementById('printScaleInput').value = config.printScale;
+            if (config.tournamentName) document.getElementById('tournamentNameInput').value = config.tournamentName;
+            if (config.footerText) document.getElementById('footerTextInput').value = config.footerText;
+
+            if (config.customFieldName1) document.getElementById('customFieldName1Input').value = config.customFieldName1;
+            if (config.customFieldName2) document.getElementById('customFieldName2Input').value = config.customFieldName2;
+            if (config.customFieldName3) document.getElementById('customFieldName3Input').value = config.customFieldName3;
+            if (config.customFieldName4) document.getElementById('customFieldName4Input').value = config.customFieldName4;
+
+            uploadedLogoBase64 = config.logo || '';
+
+            if (config.showLogo !== undefined) document.getElementById('showLogoToggle').checked = config.showLogo;
+            if (config.showTitle !== undefined) document.getElementById('showTitleToggle').checked = config.showTitle;
+            if (config.showDates !== undefined) document.getElementById('showDatesToggle').checked = config.showDates;
+            if (config.showRole !== undefined) document.getElementById('showRoleToggle').checked = config.showRole;
+            if (config.showEnName !== undefined) document.getElementById('showEnNameToggle').checked = config.showEnName;
+            if (config.showSerial !== undefined) document.getElementById('showSerialToggle').checked = config.showSerial;
+            if (config.showDob !== undefined) document.getElementById('showDobToggle').checked = config.showDob;
+            if (config.showAge !== undefined) document.getElementById('showAgeToggle').checked = config.showAge;
+            if (config.showCustomField1 !== undefined) document.getElementById('showCustomField1Toggle').checked = config.showCustomField1;
+            if (config.showCustomField2 !== undefined) document.getElementById('showCustomField2Toggle').checked = config.showCustomField2;
+            if (config.showCustomField3 !== undefined) document.getElementById('showCustomField3Toggle').checked = config.showCustomField3;
+            if (config.showCustomField4 !== undefined) document.getElementById('showCustomField4Toggle').checked = config.showCustomField4;
+            if (config.showCountry !== undefined) document.getElementById('showCountryToggle').checked = config.showCountry;
+            if (config.showPhoto !== undefined) document.getElementById('showPhotoToggle').checked = config.showPhoto;
+            if (config.showQR !== undefined) document.getElementById('showQRToggle').checked = config.showQR;
+            if (config.showFooter !== undefined) document.getElementById('showFooterToggle').checked = config.showFooter;
+
+            updateCustomFilterLabels();
+            applyCustomizations();
+        }
+
+        function exportPresetFile() {
+            const config = getCurrentConfigObject();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `${config.tournamentName || 'badge'}_template.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importPresetFile(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    if (config) applyConfigObject(config);
+                } catch (err) {
+                    alert(`خطأ في قراءة ملف JSON: ${file.name}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('excelFileInput');
+        const badgesContainer = document.getElementById('badgesContainer');
+        const printBtn = document.getElementById('printBtn');
+        const exportImgBtn = document.getElementById('exportImgBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const dropZoneText = document.getElementById('dropZoneText');
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-white'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('bg-white'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-white');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        }
+
+        function handleFile(file) {
+            dropZoneText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-success me-1"></i> جاري القراءة...`;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+                    if (json && json.length > 0) {
+                        participantsData = json.map(person => {
+                            const imgName = person['اسم الصورة'] || person['الصورة'] || person['Photo'] || person['Image'] || '';
+                            person.photoUrl = imgName ? (imgName.startsWith('http') || imgName.includes('/') || imgName.startsWith('data:') ? imgName : `images/${imgName}`) : '';
+                            return person;
+                        });
+                        printSelection = new Array(participantsData.length).fill(true);
+
+                        updateCountryFilterOptions();
+                        updateCustomFilterOptions();
+                        updateCustomFilterLabels();
+                        renderBadges();
+
+                        printBtn.disabled = false;
+                        exportImgBtn.disabled = false;
+                        clearBtn.disabled = false;
+                        dropZoneText.innerHTML = `تم تحميل (${json.length}) مشارك بنجاح`;
+                    } else {
+                        alert("ملف الإكسل فارغ!");
+                        dropZoneText.innerHTML = `ملف فارغ أو غير صالح`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("خطأ في قراءة ملف الإكسل.");
+                    dropZoneText.innerHTML = `خطأ في القراءة`;
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function updateCountryFilterOptions() {
+            const countrySelect = document.getElementById('countryFilterSelect');
+            const countries = new Set();
+            participantsData.forEach(p => {
+                const c = p['الدولة'] || p['البلد'] || p['Country'];
+                if (c) countries.add(String(c).trim());
+            });
+
+            countrySelect.innerHTML = `<option value="all">جميع الدول</option>`;
+            countries.forEach(country => {
+                countrySelect.innerHTML += `<option value="${country}">${country}</option>`;
+            });
+        }
+
+        function toggleSelectAll(status) {
+            printSelection.fill(status);
+            renderBadges();
+        }
+
+        function toggleBadgePrint(index) {
+            printSelection[index] = !printSelection[index];
+            const badgeCard = document.getElementById(`badge-card-${index}`);
+            if (badgeCard) {
+                if (printSelection[index]) badgeCard.classList.remove('no-print-card');
+                else badgeCard.classList.add('no-print-card');
+            }
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = printSelection.filter(Boolean).length;
+            document.getElementById('selectedCount').innerText = `${count} من ${participantsData.length} بطاقات`;
+        }
+
+        function zoomCard(index) {
+            const originalCard = document.getElementById(`badge-card-${index}`);
+            if (originalCard) {
+                const modalBody = document.getElementById('zoomModalBody');
+                modalBody.innerHTML = '';
+                const clonedCard = originalCard.cloneNode(true);
+                const selectBox = clonedCard.querySelector('.badge-select-box');
+                if (selectBox) selectBox.remove();
+                modalBody.appendChild(clonedCard);
+                new bootstrap.Modal(document.getElementById('zoomModal')).show();
+            }
+        }
+
+        async function openExportModal() {
+            const selectedIndices = printSelection.map((selected, idx) => selected ? idx : -1).filter(idx => idx !== -1);
+            if (selectedIndices.length === 0) {
+                alert("الرجاء تحديد بطاقة واحدة على الأقل للتصدير.");
+                return;
+            }
+
+            const galleryModal = new bootstrap.Modal(document.getElementById('exportGalleryModal'));
+            const loadingDiv = document.getElementById('exportGalleryLoading');
+            const gridDiv = document.getElementById('exportGalleryGrid');
+            const progressTxt = document.getElementById('galleryProgressTxt');
+
+            gridDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+            galleryModal.show();
+
+            const total = selectedIndices.length;
+
+            for (let i = 0; i < total; i++) {
+                const index = selectedIndices[i];
+                const person = participantsData[index];
+                const name = person['الاسم الكامل'] || person['الاسم'] || person['Name'] || 'غير محدد';
+
+                progressTxt.innerText = `${Math.round(((i + 1) / total) * 100)}% (${i + 1} / ${total})`;
+
+                const originalCard = document.getElementById(`badge-card-${index}`);
+                if (originalCard) {
+                    const clonedCard = originalCard.cloneNode(true);
+                    const selectBox = clonedCard.querySelector('.badge-select-box');
+                    if (selectBox) selectBox.remove();
+
+                    const imagesInside = clonedCard.querySelectorAll('img');
+                    for (let img of imagesInside) {
+                        if (img.src && !img.src.startsWith('data:')) {
+                            img.src = await convertImgToBase64(img.src);
+                        }
+                    }
+
+                    clonedCard.style.position = 'absolute';
+                    clonedCard.style.left = '-9999px';
+                    clonedCard.style.top = '0';
+                    clonedCard.style.transform = 'none';
+                    clonedCard.style.boxShadow = 'none';
+                    document.body.appendChild(clonedCard);
+
+                    await new Promise(resolve => setTimeout(resolve, 150));
+
+                    try {
+                        const canvas = await html2canvas(clonedCard, { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' });
+                        const imgData = canvas.toDataURL('image/png');
+                        const cleanFileName = `${String(i + 1).padStart(3, '0')}_${String(name).trim().replace(/[\/\\?%*:|"<>]/g, '_')}`;
+
+                        gridDiv.insertAdjacentHTML('beforeend', `
+                                <div class="col-md-3 col-sm-6 text-center">
+                                    <div class="card border shadow-sm p-2 bg-white rounded-3 h-100">
+                                        <div class="mb-2 bg-light rounded overflow-hidden d-flex justify-content-center align-items-center" style="height: 160px;">
+                                            <img src="${imgData}" class="img-fluid" style="max-height: 150px; object-fit: contain;" alt="${cleanFileName}">
+                                        </div>
+                                        <p class="small fw-bold text-dark text-truncate mb-2" title="${name}">${name}</p>
+                                        <a href="${imgData}" download="${cleanFileName}.png" class="btn btn-success btn-sm w-100 rounded-pill fw-bold">
+                                            <i class="fa-solid fa-download me-1"></i> تحميل الصورة
+                                        </a>
+                                    </div>
+                                </div>
+                            `);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    document.body.removeChild(clonedCard);
+                }
+            }
+            loadingDiv.style.display = 'none';
+        }
+
+        function getExcelFieldValue(person, fieldName) {
+            if (!person || !fieldName) return '';
+            const trimmedName = fieldName.trim();
+            if (person[trimmedName] !== undefined) return person[trimmedName];
+            const keys = Object.keys(person);
+            const foundKey = keys.find(k => k.trim().toLowerCase() === trimmedName.toLowerCase());
+            return foundKey ? person[foundKey] : '';
+        }
+
+        function renderBadges() {
+            badgesContainer.innerHTML = '';
+            const selectedRole = document.getElementById('roleSelect').value;
+            const tournamentName = document.getElementById('tournamentNameInput').value;
+            const footerText = document.getElementById('footerTextInput').value || 'اللجنة المنظمة';
+            const startDate = document.getElementById('startDateInput').value;
+            const endDate = document.getElementById('endDateInput').value;
+            const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+            const selectedCountry = document.getElementById('countryFilterSelect') ? document.getElementById('countryFilterSelect').value : 'all';
+            const sortOrder = document.getElementById('sortOrderSelect') ? document.getElementById('sortOrderSelect').value : 'default';
+
+            const cName1 = document.getElementById('customFieldName1Input').value;
+            const cName2 = document.getElementById('customFieldName2Input').value;
+            const cName3 = document.getElementById('customFieldName3Input').value;
+            const cName4 = document.getElementById('customFieldName4Input').value;
+
+            const filterVal1 = document.getElementById('customFilter1Select') ? document.getElementById('customFilter1Select').value : 'all';
+            const filterVal2 = document.getElementById('customFilter2Select') ? document.getElementById('customFilter2Select').value : 'all';
+            const filterVal3 = document.getElementById('customFilter3Select') ? document.getElementById('customFilter3Select').value : 'all';
+            const filterVal4 = document.getElementById('customFilter4Select') ? document.getElementById('customFilter4Select').value : 'all';
+
+            const showLogo = document.getElementById('showLogoToggle').checked;
+            const showTitle = document.getElementById('showTitleToggle').checked;
+            const showDates = document.getElementById('showDatesToggle').checked;
+            const showRole = document.getElementById('showRoleToggle').checked;
+            const showEnName = document.getElementById('showEnNameToggle').checked;
+            const showSerial = document.getElementById('showSerialToggle').checked;
+            const showDob = document.getElementById('showDobToggle').checked;
+            const showAge = document.getElementById('showAgeToggle').checked;
+
+            const showC1 = document.getElementById('showCustomField1Toggle').checked;
+            const showC2 = document.getElementById('showCustomField2Toggle').checked;
+            const showC3 = document.getElementById('showCustomField3Toggle').checked;
+            const showC4 = document.getElementById('showCustomField4Toggle').checked;
+
+            const showCountry = document.getElementById('showCountryToggle').checked;
+            const showPhoto = document.getElementById('showPhotoToggle').checked;
+            const showQR = document.getElementById('showQRToggle').checked;
+            const showFooter = document.getElementById('showFooterToggle').checked;
+
+            const dateStr = (startDate && endDate) ? `${startDate} إلى ${endDate}` : '2026';
+
+            let processedList = [...participantsData];
+            if (sortOrder === 'name_asc') {
+                processedList.sort((a, b) => {
+                    let nameA = (a['الاسم الكامل'] || a['الاسم'] || a['Name'] || '').toString();
+                    let nameB = (b['الاسم الكامل'] || b['الاسم'] || b['Name'] || '').toString();
+                    return nameA.localeCompare(nameB, 'ar');
+                });
+            } else if (sortOrder === 'name_desc') {
+                processedList.sort((a, b) => {
+                    let nameA = (a['الاسم الكامل'] || a['الاسم'] || a['Name'] || '').toString();
+                    let nameB = (b['الاسم الكامل'] || b['الاسم'] || b['Name'] || '').toString();
+                    return nameB.localeCompare(nameA, 'ar');
+                });
+            }
+
+            processedList.forEach((person, index) => {
+                if (!person) return;
+                const keys = Object.keys(person);
+                const name = person['الاسم الكامل'] || person['الاسم'] || person['Name'] || person[keys[0]] || 'غير محدد';
+                const country = person['الدولة'] || person['البلد'] || person['Country'] || '';
+
+                if (selectedCountry !== 'all' && String(country).trim() !== selectedCountry) return;
+
+                const valC1 = getExcelFieldValue(person, cName1);
+                const valC2 = getExcelFieldValue(person, cName2);
+                const valC3 = getExcelFieldValue(person, cName3);
+                const valC4 = getExcelFieldValue(person, cName4);
+
+                if (filterVal1 !== 'all' && String(valC1).trim() !== filterVal1) return;
+                if (filterVal2 !== 'all' && String(valC2).trim() !== filterVal2) return;
+                if (filterVal3 !== 'all' && String(valC3).trim() !== filterVal3) return;
+                if (filterVal4 !== 'all' && String(valC4).trim() !== filterVal4) return;
+
+                if (searchQuery) {
+                    const serialCheck = String(person['رقم تسلسلي'] || person['الرقم التسلسلي'] || person['ID'] || '');
+                    if (!String(name).toLowerCase().includes(searchQuery) && !serialCheck.toLowerCase().includes(searchQuery)) return;
+                }
+
+                const enName = person['EnName'] || person['الاسم بالانكليزي'] || person['الاسم بالإنكليزية'] || (keys[1] ? person[keys[1]] : '') || '';
+                const dob = formatExcelDate(person['تاريخ الولادة'] || person['تاريخ الميلاد'] || person['DOB'] || '');
+                const ageText = (showAge && dob !== '----/--/--') ? ` ${calculateAge(dob)}` : '';
+                const serial = person['رقم تسلسلي'] || person['الرقم التسلسلي'] || person['ID'] || `SYR-2026-${String(index + 1).padStart(3, '0')}`;
+                const roleInFile = person['الصفة'] || person['الصفه'] || person['Role'] || selectedRole;
+
+                const photoUrl = person.photoUrl || '';
+                const isSelected = printSelection[index] !== false;
+                const qrId = `qrcode-${index}`;
+
+                let flagHtml = country ? `<img src="https://flagcdn.com/w40/${countryFlags[country.toString().trim().toLowerCase()] || 'sy'}.png" class="country-flag">` : '';
+                let logoHtml = showLogo ? `<img src="${uploadedLogoBase64 || defaultLogoSVG}" class="logo-img">` : '';
+
+                const titleHtml = showTitle ? `<h5 class="m-0 text-white">${tournamentName}</h5>` : '';
+                const datesHtml = showDates ? `<p class="m-0 text-white-50" style="font-size:8px;">${dateStr}</p>` : '';
+                const roleHtml = showRole ? `<div class="tags-row"><span class="role-tag">${roleInFile}</span></div>` : '';
+                const countryHtml = (showCountry && country) ? `<div class="country-badge">${flagHtml} <span>${country}</span></div>` : '';
+
+                const photoBoxHtml = photoUrl ? `<img src="${photoUrl}">` : `<i class="fa-solid fa-camera text-secondary"></i><input type="file" accept="image/*" style="position:absolute; width:100%; height:100%; opacity:0; cursor:pointer;" onchange="handleParticipantPhoto(event, ${index})">`;
+                const photoContainerHtml = showPhoto ? `<div class="photo-placeholder">${photoBoxHtml}</div>` : '';
+                const qrContainerHtml = showQR ? `<div class="qr-placeholder" id="${qrId}"></div>` : '';
+
+                const mediaSectionHtml = (showPhoto || showQR) ? `<div class="media-container">${photoContainerHtml}${qrContainerHtml}</div>` : '';
+
+                const serialRowHtml = showSerial ? `<div class="d-flex justify-content-between mb-1"><span>الرقم التسلسلي:</span><strong>${serial}</strong></div>` : '';
+                const dobRowHtml = showDob ? `<div class="d-flex justify-content-between mb-1"><span>تاريخ الميلاد:</span><strong>${dob}${ageText}</strong></div>` : '';
+                const rowC1 = (showC1 && valC1) ? `<div class="d-flex justify-content-between mb-1"><span>${cName1}:</span><strong class="text-primary">${valC1}</strong></div>` : '';
+                const rowC2 = (showC2 && valC2) ? `<div class="d-flex justify-content-between mb-1"><span>${cName2}:</span><strong class="text-success">${valC2}</strong></div>` : '';
+                const rowC3 = (showC3 && valC3) ? `<div class="d-flex justify-content-between mb-1"><span>${cName3}:</span><strong class="text-danger">${valC3}</strong></div>` : '';
+                const rowC4 = (showC4 && valC4) ? `<div class="d-flex justify-content-between"><span>${cName4}:</span><strong class="text-dark">${valC4}</strong></div>` : '';
+
+                const hasDetails = showSerial || showDob || (showC1 && valC1) || (showC2 && valC2) || (showC3 && valC3) || (showC4 && valC4);
+                const detailsSectionHtml = hasDetails ? `<div class="details-box">${serialRowHtml}${dobRowHtml}${rowC1}${rowC2}${rowC3}${rowC4}</div>` : '';
+                const footerSectionHtml = showFooter ? `<div class="badge-footer">${footerText}</div>` : '';
+
+                let bodyContentHtml = `
+                        ${roleHtml}
+                        <div class="participant-name-container">
+                            <div class="participant-name">${name}</div>
+                            ${(showEnName && enName) ? `<div class="participant-en-name">${enName}</div>` : ''}
+                        </div>
+                        ${countryHtml}
+                        ${mediaSectionHtml}
+                        ${detailsSectionHtml}
+                    `;
+
+                const layoutPreset = document.getElementById('layoutPresetSelect').value;
+
+                badgesContainer.insertAdjacentHTML('beforeend', `
+                        <div class="badge-card ${layoutPreset} ${isSelected ? '' : 'no-print-card'}" id="badge-card-${index}">
+                            <div class="badge-select-box no-print">
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBadgePrint(${index})">
+                                <i class="fa-solid fa-expand text-secondary ms-1" style="cursor: pointer; font-size: 11px;" onclick="zoomCard(${index})"></i>
+                            </div>
+                            <div class="badge-header">
+                                <div class="lanyard-hole"></div>
+                                ${logoHtml}
+                                ${titleHtml}
+                                ${datesHtml}
+                            </div>
+                            <div class="badge-body">${bodyContentHtml}</div>
+                            ${footerSectionHtml}
+                        </div>
+                    `);
+
+                if (showQR) {
+                    const el = document.getElementById(qrId);
+                    if (el) {
+                        el.innerHTML = '';
+                        let qrDataText = `الاسم: ${name}\nالبلد: ${country}\nالصفة: ${roleInFile}\nالرقم: ${serial}`;
+                        if (valC1) qrDataText += `\n${cName1}: ${valC1}`;
+                        if (valC2) qrDataText += `\n${cName2}: ${valC2}`;
+                        if (valC3) qrDataText += `\n${cName3}: ${valC3}`;
+                        if (valC4) qrDataText += `\n${cName4}: ${valC4}`;
+
+                        const qrSize = (layoutPreset === 'layout-horizontal') ? 65 : 75;
+
+                        new QRCodeStyling({
+                            width: qrSize,
+                            height: qrSize,
+                            type: "svg",
+                            data: qrDataText,
+                            dotsOptions: {
+                                color: document.getElementById('qrColorInput') ? document.getElementById('qrColorInput').value : '#334155',
+                                type: "extra-rounded"
+                            }
+                        }).append(el);
+                    }
+                }
+            });
+            updateSelectedCount();
+        }
+
+        function updateRoles() { if (participantsData.length > 0) renderBadges(); }
+        function clearBadges() {
+            badgesContainer.innerHTML = '';
+            fileInput.value = '';
+            document.getElementById('searchInput').value = '';
+            participantsData = [];
+            printSelection = [];
+            printBtn.disabled = true;
+            exportImgBtn.disabled = true;
+            clearBtn.disabled = true;
+            dropZoneText.innerHTML = `اختر ملف الإكسل أو اسحبه هنا`;
+            updateSelectedCount();
+        }
+
+        window.onload = function () {
+            applyCustomizations();
+            updateBadgeSize();
+            updatePrinterPaper();
+            updateCustomFilterLabels();
+        };
+    </script>
+</body>
+</html>
